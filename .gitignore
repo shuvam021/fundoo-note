@@ -1,0 +1,14 @@
+# all files
+**/*.*
+
+# some obvious folder and files
+__pycache__/
+venv/
+# .env
+# .vscode/
+# .idea/
+
+# some require files
+!*.py
+!.gitignore
+!requirements.txt

@@ -5,7 +5,8 @@ from webbrowser import get
 
 import jwt
 from api.authentication import models, serializers
-from api.utils.views import CustomAuthentication, response
+from api.utils.views import (CustomAuthentication, get_user_id_from_token,
+                             response)
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import status, views, viewsets
@@ -29,11 +30,7 @@ class RegisterApiView(views.APIView):
 class UserVerify(views.APIView):
     def post(self, request, **kwargs):
         try:
-            payload = jwt.decode(
-                jwt=kwargs.get('token'),
-                key=settings.SECRET_KEY,
-                algorithms=['HS256'])
-            pk = payload.get('user_id')
+            pk = get_user_id_from_token(kwargs.get('token'))
             user = get_object_or_404(models.User, pk=pk)
             serializer = serializers.UserVerificationSerializer(
                 user, data={"is_verified": True})

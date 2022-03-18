@@ -1,3 +1,4 @@
+import jwt
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
@@ -8,9 +9,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 
+
 # Create your views here.
-
-
 def response(status: status, data=None, message=None):
     msg = {
         200: 'Success',
@@ -33,6 +33,15 @@ def generate_tokens_for_user(user):
     return str(refresh.access_token)
 
 
+def get_user_id_from_token(token):
+    payload = jwt.decode(
+        jwt=token,
+        key=settings.SECRET_KEY,
+        algorithms=['HS256']
+    )
+    return payload.get('user_id')
+
+
 def get_current_user(request):
     JWT_authenticator = JWTAuthentication()
     response = JWT_authenticator.authenticate(request)
@@ -51,10 +60,20 @@ class CustomEMailer:
         body = "Try this link to verify your account\n"
         body += f"{endpoint}"
 
-        return cls.mail_send(subject, body, email)
+        return cls.send(subject, body, email)
+
+    @classmethod
+    def forget_password_mail(cls, token, email):
+        endpoint = settings.SITE_URI + \
+            reverse('api:update_password', kwargs={'token': token})
+        subject = "Change your password"
+        body = f"Hii, {email}\n"
+        body += f"use this link to change your password\n"
+        body += f"{endpoint}"
+        return cls.send(subject, body, email)
 
     @staticmethod
-    def mail_send(subject, body, email):
+    def send(subject, body, email):
         return send_mail(subject, body, settings.EMAIL_HOST, [email], fail_silently=False)
 
 

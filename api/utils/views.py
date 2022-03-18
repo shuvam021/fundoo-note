@@ -14,6 +14,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 def response(status: status, data=None, message=None):
     msg = {
         200: 'Success',
+        201: 'Data saved',
+        202: 'Retrieved',
+        204: 'Deleted',
         400: 'Error',
         401: 'Login required',
         404: 'Data not found',

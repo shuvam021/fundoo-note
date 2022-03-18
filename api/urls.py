@@ -15,4 +15,5 @@ urlpatterns = [
     path('update_password/<str:token>/', views.UpdatePasswordAPIView.as_view(), name='update_password'),
 
     path('auth/', include('api.authentication.urls', namespace='auth')),
+    path('notes/', include('api.notes.urls', namespace='note')),
 ]

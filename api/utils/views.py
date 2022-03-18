@@ -1,13 +1,17 @@
+import logging
+from asyncio.log import logger
+
 import jwt
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.urls import reverse
-from rest_framework import exceptions, status
-from rest_framework.authentication import BaseAuthentication
+from rest_framework import authentication, exceptions, permissions, status
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
+
+logger = logging.getLevelName(__name__)
 
 
 # Create your views here.
@@ -80,7 +84,7 @@ class CustomEMailer:
         return send_mail(subject, body, settings.EMAIL_HOST, [email], fail_silently=False)
 
 
-class CustomAuthentication(BaseAuthentication):
+class CustomAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
         if not request.META.get('HTTP_AUTHORIZATION'):
             return None
@@ -89,3 +93,13 @@ class CustomAuthentication(BaseAuthentication):
         except:
             raise exceptions.AuthenticationFailed('No such user')
         return (user, None)
+
+
+class CustomIsAuthenticated(permissions.BasePermission):
+    def has_permission(self, request, view):
+        try:
+            user = get_current_user(request)
+            return True
+        except jwt.ExpiredSignatureError as e:
+            logger.exception(e)
+            raise exceptions.PermissionDenied("token expired")

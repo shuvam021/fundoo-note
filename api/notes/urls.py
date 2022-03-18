@@ -7,12 +7,12 @@ app_name = 'note'
 urlpatterns = [
 
     path('', views.NoteViewset.as_view({
-        'get': 'list',
-        'post': 'create'
-    })),
+        'get': 'list', 'post': 'create'})),
     path('<int:pk>/', views.NoteViewset.as_view({
-        'get': 'retrieve',
-        'put': 'update',
-        'delete': 'destroy'
-    })),
+        'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
+
+    path('labels/', views.LabelViewSet.as_view(
+        {'get': 'list', 'post': 'create'})),
+    path('labels/<int:pk>/', views.LabelViewSet.as_view(
+        {'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})),
 ]

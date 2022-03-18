@@ -6,6 +6,7 @@ from api.utils.views import (CustomAuthentication, CustomIsAuthenticated,
                              response)
 from django.core.cache import cache
 from django.forms.models import model_to_dict
+from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 
 logger = logging.getLogger(__name__)
@@ -79,3 +80,38 @@ class NoteViewset(viewsets.ViewSet):
             self.update_cache(queryset, request.user.id)
 
         return response(data={}, status=status.HTTP_204_NO_CONTENT)
+
+
+class LabelViewSet(viewsets.ViewSet):
+    authentication_classes = (CustomAuthentication,)
+    permission_classes = (CustomIsAuthenticated,)
+    serializer_class = LabelSerializer
+    model = Label
+
+    def list(self, request):
+        queryset = Label.objects.all().order_by("pk")
+        serializer = self.serializer_class(queryset, many=True)
+        return response(data=serializer.data, status=status.HTTP_200_OK)
+
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return response(data=serializer.data, status=status.HTTP_201_CREATED)
+
+    def retrieve(self, request, pk=None):
+        queryset = get_object_or_404(self.model, pk=pk)
+        serializer = self.serializer_class(queryset)
+        return response(data=serializer.data, status=status.HTTP_200_OK)
+
+    def update(self, request, pk=None):
+        qs = get_object_or_404(self.model, pk=pk)
+        serializer = self.serializer_class(qs, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return response(data=serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    def destroy(self, request, pk=None):
+        qs = get_object_or_404(self.model, pk=pk)
+        qs.delete()
+        return response(status=status.HTTP_204_NO_CONTENT)

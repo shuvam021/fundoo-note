@@ -1,4 +1,3 @@
-
-from .auth_views import ForgetPasswordAPIView, UpdatePasswordAPIView
-from .token_view import MyTokenObtainPairView
+from .auth_views import (ForgetPasswordAPIView, MyTokenObtainPairView,
+                         UpdatePasswordAPIView)
 from .users import RegisterApiView, UserVerify, UserViewSet

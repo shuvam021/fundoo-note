@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 # Create your models here.
 class User(AbstractUser):
+    """Extend class Default User model with custom fields"""
     email = models.EmailField(unique=True, max_length=255)
     password = models.CharField(max_length=255)
     is_verified = models.BooleanField(default=False)

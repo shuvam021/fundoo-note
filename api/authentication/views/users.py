@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 
 # Create your views here.
 class RegisterApiView(views.APIView):
+    """Save new users"""
+
     def post(self, request):
         serializer = serializers.UserSerializer(data=request.data)
         try:
@@ -43,16 +45,20 @@ class UserVerify(views.APIView):
 
 
 class UserViewSet(viewsets.ViewSet):
+    """User View class"""
+
     serializer = serializers.UserSerializer
     model = models.User
     authentication_classes = (CustomAuthentication, )
 
     def list(self, request):
+        """List all users"""
         user = self.model.objects.filter(id=request.user.id)
         serializer = self.serializer(user, many=True)
         return response(data=serializer.data, status=status.HTTP_200_OK)
 
     def retrieve(self, request, pk=None):
+        """Return a user with matching pk value"""
         try:
             serializer = self.serializer(request.user)
             return response(data=serializer.data, status=status.HTTP_200_OK)
@@ -61,6 +67,7 @@ class UserViewSet(viewsets.ViewSet):
             return response(message=e.__str__(), status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, pk=None):
+        """Update the user's details with matching pk value"""
         try:
             if pk == request.user.id:
                 serializer = self.serializer(request.user, data=request.data)
@@ -73,6 +80,7 @@ class UserViewSet(viewsets.ViewSet):
             return response(message=e.__str__(), status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk=None):
+        """Remove the user's details with matching pk value"""
         try:
             if pk == request.user.id:
                 user = self.model.objects.get(pk=request.user.id)

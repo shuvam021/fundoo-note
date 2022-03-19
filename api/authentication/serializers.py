@@ -1,7 +1,8 @@
-from django.contrib.auth import get_user_model
+from api.authentication.models import User
+from django.conf import settings
+from django.core.cache import cache
 from rest_framework import serializers
-
-User = get_user_model()
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 class UserVerificationSerializer(serializers.ModelSerializer):
@@ -27,3 +28,12 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['id'] = user.id
+        cache.set(token.access_token, user.id, settings.TOKEN_EXP_TIME)
+        return token

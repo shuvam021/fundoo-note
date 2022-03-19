@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 # Create your views here.
 class NoteViewset(viewsets.ViewSet):
+    """Note APIs class"""
     serializer_class = NoteSerializer
     authentication_classes = (CustomAuthentication,)
     permission_classes = (CustomIsAuthenticated,)
@@ -21,10 +22,12 @@ class NoteViewset(viewsets.ViewSet):
 
     @staticmethod
     def update_cache(queryset, user_id):
+        """Update cached memory"""
         json_data = [{item.id: model_to_dict(item)} for item in queryset]
         cache.set(int(user_id), json_data)
 
     def list(self, request):
+        """Return list of notes from cached memory"""
         dataset = cache.get(int(request.user.id))
         data = []
         if dataset:
@@ -33,6 +36,7 @@ class NoteViewset(viewsets.ViewSet):
         return response(data=data, status=status.HTTP_200_OK)
 
     def create(self, request):
+        """Add new note to Database and Return it"""
         queryset = Note.objects.filter(user=request.user)
         data = request.data.copy()
         data['user'] = request.user.id
@@ -40,9 +44,7 @@ class NoteViewset(viewsets.ViewSet):
             serializer = self.serializer_class(data=data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
-
-            if len(cache.get(request.user.id)) != len(queryset):
-                self.update_cache(queryset, request.user.id)
+            self.update_cache(queryset, request.user.id)
 
             return response(data=serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:
@@ -50,12 +52,14 @@ class NoteViewset(viewsets.ViewSet):
             return response(message=str(e), status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
+        """Return the logged in user's note searched by pk from cahed memory"""
         dataset = [i.get(pk) for i in cache.get(int(request.user.id))]
         dataset = list(filter(None, dataset))
         data = {} if dataset == [] else dataset[0]
         return response(data=data, status=status.HTTP_200_OK)
 
     def update(self, request, pk=None):
+        """Update the logged in user's note searched by pk and update cached memory"""
         queryset = Note.objects.filter(user=request.user)
         data = request.data.copy()
         data['user'] = request.user.id
@@ -71,6 +75,7 @@ class NoteViewset(viewsets.ViewSet):
             return response(message=str(e), status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, pk=None):
+        """Delete the logged in user's note if exists and update cached memory"""
         queryset = Note.objects.filter(user=request.user)
         query = queryset.get(pk=pk)
         if query:
@@ -83,28 +88,33 @@ class NoteViewset(viewsets.ViewSet):
 
 
 class LabelViewSet(viewsets.ViewSet):
+    """Label APIs class"""
     authentication_classes = (CustomAuthentication,)
     permission_classes = (CustomIsAuthenticated,)
     serializer_class = LabelSerializer
     model = Label
 
     def list(self, request):
+        """Return list of lebels from database"""
         queryset = Label.objects.all().order_by("pk")
         serializer = self.serializer_class(queryset, many=True)
         return response(data=serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request):
+        """Save new lebel in the database"""
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return response(data=serializer.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, pk=None):
+        """Return lebel searched by pk"""
         queryset = get_object_or_404(self.model, pk=pk)
         serializer = self.serializer_class(queryset)
         return response(data=serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, pk=None):
+        """update lebel searched by pk"""
         qs = get_object_or_404(self.model, pk=pk)
         serializer = self.serializer_class(qs, data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -112,6 +122,7 @@ class LabelViewSet(viewsets.ViewSet):
         return response(data=serializer.data, status=status.HTTP_202_ACCEPTED)
 
     def destroy(self, request, pk=None):
+        """delete lebel"""
         qs = get_object_or_404(self.model, pk=pk)
         qs.delete()
         return response(status=status.HTTP_204_NO_CONTENT)

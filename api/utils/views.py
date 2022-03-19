@@ -3,7 +3,6 @@ from asyncio.log import logger
 
 import jwt
 from django.conf import settings
-from django.core.cache import cache
 from django.core.mail import send_mail
 from django.urls import reverse
 from rest_framework import authentication, exceptions, permissions, status
@@ -99,7 +98,9 @@ class CustomIsAuthenticated(permissions.BasePermission):
     def has_permission(self, request, view):
         try:
             user = get_current_user(request)
-            return True
+            if user:
+                return True
+            return False
         except jwt.ExpiredSignatureError as e:
             logger.exception(e)
             raise exceptions.PermissionDenied("token expired")

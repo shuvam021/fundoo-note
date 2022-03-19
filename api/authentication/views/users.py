@@ -1,14 +1,10 @@
 import logging
-from re import T
-from traceback import print_tb
-from webbrowser import get
 
-import jwt
 from api.authentication import models, serializers
 from api.utils.views import (CustomAuthentication, get_user_id_from_token,
                              response)
-from django.conf import settings
 from django.shortcuts import get_object_or_404
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, views, viewsets
 
 logger = logging.getLogger(__name__)
@@ -17,9 +13,11 @@ logger = logging.getLogger(__name__)
 # Create your views here.
 class RegisterApiView(views.APIView):
     """Save new users"""
+    serializer_class = serializers.UserSerializer
 
+    @swagger_auto_schema(request_body=serializer_class)
     def post(self, request):
-        serializer = serializers.UserSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -30,14 +28,15 @@ class RegisterApiView(views.APIView):
 
 
 class UserVerify(views.APIView):
+    @swagger_auto_schema(request_body=serializers.UserVerificationSerializer)
     def post(self, request, **kwargs):
         try:
             pk = get_user_id_from_token(kwargs.get('token'))
             user = get_object_or_404(models.User, pk=pk)
-            serializer = serializers.UserVerificationSerializer(
-                user, data={"is_verified": True})
+            # serializer = serializers.UserVerificationSerializer(user, data={"is_verified": True})
+            serializer = serializers.UserVerificationSerializer(user)
             serializer.is_valid(raise_exception=True)
-            serializer.save()
+            # serializer.save()
             return response(data=serializer.data, status=status.HTTP_202_ACCEPTED)
         except Exception as e:
             logger.exception(e)
@@ -66,6 +65,7 @@ class UserViewSet(viewsets.ViewSet):
             logger.exception(e)
             return response(message=e.__str__(), status=status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(request_body=serializer)
     def update(self, request, pk=None):
         """Update the user's details with matching pk value"""
         try:

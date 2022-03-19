@@ -8,6 +8,7 @@ from django.core.cache import cache
 from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
+from drf_yasg.utils import swagger_auto_schema
 
 logger = logging.getLogger(__name__)
 
@@ -28,19 +29,23 @@ class NoteViewset(viewsets.ViewSet):
 
     def list(self, request):
         """Return list of notes from cached memory"""
-        dataset = cache.get(int(request.user.id))
-        data = []
-        if dataset:
-            data = [v for item in dataset for k, v in item.items()]
+        try:
+            dataset = cache.get(int(request.user.id))
+            data = []
+            if dataset:
+                data = [v for item in dataset for k, v in item.items()]
 
-        return response(data=data, status=status.HTTP_200_OK)
+            return response(data=data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return response(data=[], status=status.HTTP_204_NO_CONTENT)
 
+    @swagger_auto_schema(request_body=serializer_class)
     def create(self, request):
         """Add new note to Database and Return it"""
-        queryset = Note.objects.filter(user=request.user)
         data = request.data.copy()
-        data['user'] = request.user.id
         try:
+            queryset = Note.objects.filter(user=request.user)
+            data['user'] = request.user.id
             serializer = self.serializer_class(data=data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -58,6 +63,7 @@ class NoteViewset(viewsets.ViewSet):
         data = {} if dataset == [] else dataset[0]
         return response(data=data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=serializer_class)
     def update(self, request, pk=None):
         """Update the logged in user's note searched by pk and update cached memory"""
         queryset = Note.objects.filter(user=request.user)
@@ -100,6 +106,7 @@ class LabelViewSet(viewsets.ViewSet):
         serializer = self.serializer_class(queryset, many=True)
         return response(data=serializer.data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=serializer_class)
     def create(self, request):
         """Save new lebel in the database"""
         serializer = self.serializer_class(data=request.data)
@@ -113,6 +120,7 @@ class LabelViewSet(viewsets.ViewSet):
         serializer = self.serializer_class(queryset)
         return response(data=serializer.data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(request_body=serializer_class)
     def update(self, request, pk=None):
         """update lebel searched by pk"""
         qs = get_object_or_404(self.model, pk=pk)

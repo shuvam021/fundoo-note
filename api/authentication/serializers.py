@@ -37,3 +37,12 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['id'] = user.id
         cache.set(token.access_token, user.id, settings.TOKEN_EXP_TIME)
         return token
+
+
+class ForgetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=255)
+
+
+class UpdatePasswordSerializer(serializers.Serializer):
+    password1 = serializers.CharField(max_length=255)
+    password2 = serializers.CharField(max_length=255)

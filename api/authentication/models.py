@@ -1,6 +1,7 @@
 import logging
 
-from api.utils.views import CustomEMailer, generate_tokens_for_user
+from api.authentication.tasks import send_email_to_verify_user_task
+from api.utils.views import generate_tokens_for_user
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.signals import post_save
@@ -24,7 +25,7 @@ def user_post_save(sender, instance, created, *args, **kwargs):
     if created:
         try:
             token = generate_tokens_for_user(instance)
-            CustomEMailer.verification_mail(token, instance.email)
+            send_email_to_verify_user_task.delay(token, instance.email)
         except Exception as e:
             logger.exception(e)
 

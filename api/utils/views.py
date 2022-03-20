@@ -2,11 +2,8 @@ import logging
 
 import jwt
 from django.conf import settings
-from django.core.mail import send_mail
-from django.urls import reverse
 from rest_framework import authentication, exceptions, permissions
 from rest_framework.response import Response
-from rest_framework.reverse import reverse_lazy
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -55,33 +52,6 @@ def get_current_user(request):
         user, token = res
         return user
     return None
-
-
-class CustomEMailer:
-    @classmethod
-    def verification_mail(cls, token, email):
-        endpoint = settings.SITE_URI + \
-                   reverse('api:verify', kwargs={'token': token})
-        subject = "New user Verification Notifier"
-        body = "Try this link to verify your account\n"
-        body += f"{endpoint}"
-        return cls.send(subject, body, email)
-
-    @classmethod
-    def forget_password_mail(cls, token, email, request):
-        endpoint = reverse_lazy('api:update_password',
-                                kwargs={'token': token},
-                                request=request)
-        subject = "Change your password"
-        body = f"Hii, {email}\n"
-        body += f"use this link to change your password\n"
-        body += f"{endpoint}"
-        return cls.send(subject, body, email)
-
-    @staticmethod
-    def send(subject, body, email):
-        return send_mail(subject, body, settings.EMAIL_HOST, [email], fail_silently=False)
-
 
 class CustomAuthentication(authentication.TokenAuthentication):
     def authenticate(self, request):

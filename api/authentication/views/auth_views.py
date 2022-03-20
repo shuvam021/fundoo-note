@@ -4,8 +4,9 @@ from api.authentication.models import User
 from api.authentication.serializers import (ForgetPasswordSerializer,
                                             MyTokenObtainPairSerializer,
                                             UpdatePasswordSerializer)
-from api.utils.views import (CustomEMailer, generate_tokens_for_user,
-                             get_user_id_from_token, response)
+from api.authentication.tasks import send_forget_password_task
+from api.utils.views import (generate_tokens_for_user, get_user_id_from_token,
+                             response)
 from django.contrib.auth.hashers import make_password
 from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
@@ -50,8 +51,8 @@ class ForgetPasswordAPIView(APIView):
 
         try:
             token = generate_tokens_for_user(user)
-            CustomEMailer.forget_password_mail(token, user.email, request)
-            return response(message=f'Password change link sent to {user.email}', status=status.HTTP_200_OK)
+            send_forget_password_task.delay(token, user.email)
+            return response(status=status.HTTP_200_OK)
         except Exception as e:
             logger.exception(e)
             return response(message=e.__str__(), status=status.HTTP_400_BAD_REQUEST)

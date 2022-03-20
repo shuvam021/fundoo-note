@@ -6,3 +6,4 @@ psycopg2-binary
 requests
 djangorestframework-simplejwt
 drf-yasg
+celery

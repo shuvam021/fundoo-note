@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 # Create your views here.
 class LogoutAPIView(APIView):
     def post(self, request):
-        print(request.META.get("HTTP_AUTHORIZATION"))
         response = Response()
         if request.COOKIES.get('jwt'):
             response.delete_cookie('jwt')
@@ -43,8 +42,6 @@ class ForgetPasswordAPIView(APIView):
         :return:
         """
         serializer = ForgetPasswordSerializer(request.data)
-        # data = serializer.data
-
         user = User.objects.get(email=serializer.data.get('email'))
 
         if not user:

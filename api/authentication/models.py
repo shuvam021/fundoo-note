@@ -1,14 +1,9 @@
 import logging
-from traceback import print_tb
 
-import jwt
 from api.utils.views import CustomEMailer, generate_tokens_for_user
-from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-from django.core.mail import send_mail
 from django.db import models
 from django.db.models.signals import post_save
-from django.urls import reverse
 
 logger = logging.getLogger(__name__)
 

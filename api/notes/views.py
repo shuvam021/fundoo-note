@@ -34,7 +34,6 @@ class NoteViewset(viewsets.ViewSet):
             data = []
             if dataset:
                 data = [v for item in dataset for k, v in item.items()]
-
             return response(data=data, status=status.HTTP_200_OK)
         except Exception as e:
             return response(data=[], status=status.HTTP_204_NO_CONTENT)

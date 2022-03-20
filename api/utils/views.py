@@ -4,7 +4,7 @@ import jwt
 from django.conf import settings
 from django.core.mail import send_mail
 from django.urls import reverse
-from rest_framework import authentication, exceptions, permissions, status
+from rest_framework import authentication, exceptions, permissions
 from rest_framework.response import Response
 from rest_framework.reverse import reverse_lazy
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -14,7 +14,7 @@ logger = logging.getLevelName(__name__)
 
 
 # Create your views here.
-def response(stats, data=None, message=None):
+def response(status, data=None, message=None):
     msg = {
         200: 'Success',
         201: 'Data saved',
@@ -24,14 +24,14 @@ def response(stats, data=None, message=None):
         401: 'Login required',
         404: 'Data not found',
     }
-    if not message and msg.get(stats):
-        message = msg[stats]
+    if not message and msg.get(status):
+        message = msg[status]
     res = {
         'status': status,
         'message': message,
         'data': data
     }
-    return Response(data=res, status=stats)
+    return Response(data=res, status=status)
 
 
 def generate_tokens_for_user(user):
@@ -65,8 +65,6 @@ class CustomEMailer:
         subject = "New user Verification Notifier"
         body = "Try this link to verify your account\n"
         body += f"{endpoint}"
-        print(endpoint)
-
         return cls.send(subject, body, email)
 
     @classmethod
@@ -92,7 +90,7 @@ class CustomAuthentication(authentication.TokenAuthentication):
         try:
             user = get_current_user(request)
             if user:
-                return tuple(user, None)
+                return (user, None)
             return None
         except Exception as e:
             logger.exception(e)

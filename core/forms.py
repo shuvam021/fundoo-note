@@ -16,3 +16,21 @@ class LoginForm(forms.ModelForm):
             'email': '',
             'password': '',
         }
+
+
+class RegisterForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'email', 'password')
+        widgets = {
+            'first_name': forms.TextInput(attrs={"placeholder": "First Name", "class": "form-control"}),
+            'last_name': forms.TextInput(attrs={"placeholder": "LastName", "class": "form-control"}),
+            'email': forms.EmailInput(attrs={"placeholder": "Email", "class": "form-control"}),
+            'password': forms.PasswordInput(attrs={"placeholder": "Password", "class": "form-control"})
+        }
+        labels = {
+            'first_name': '',
+            'last_name': '',
+            'email': '',
+            'password': '',
+        }

@@ -1,9 +1,11 @@
-from django.shortcuts import render
-from django.contrib.auth import authenticate, login, logout
-from core.forms import LoginForm
-from django.shortcuts import redirect
-from django.contrib import messages
 import logging
+
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import redirect, render
+from django.views.generic.edit import CreateView
+from django.urls import reverse
+from core.forms import LoginForm, RegisterForm
 
 logger = logging.getLogger(__name__)
 
@@ -30,3 +32,8 @@ def fbv_logout_view(request):
     logout(request)
     return redirect('home')
 
+
+class UserResister(CreateView):
+    form_class = RegisterForm
+    template_name = 'register.html'
+    success_url = '/login/'

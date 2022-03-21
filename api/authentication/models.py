@@ -1,10 +1,12 @@
 import logging
 
-from api.authentication.tasks import send_email_to_verify_user_task
-from api.utils.views import generate_tokens_for_user
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
+
+from api.authentication.tasks import send_email_to_verify_user_task
+from api.utils.views import generate_tokens_for_user
 
 logger = logging.getLogger(__name__)
 
@@ -30,4 +32,10 @@ def user_post_save(sender, instance, created, *args, **kwargs):
             logger.exception(e)
 
 
+def hash_password_pre_save(sender, instance, *args, **kwargs):
+    instance.password = make_password(instance.password)
+    return instance
+
+
+pre_save.connect(hash_password_pre_save, sender=User)
 post_save.connect(user_post_save, sender=User)

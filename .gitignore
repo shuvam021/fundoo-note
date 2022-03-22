@@ -12,3 +12,4 @@ venv/
 !*.py
 !.gitignore
 !requirements.txt
+!templates/*
